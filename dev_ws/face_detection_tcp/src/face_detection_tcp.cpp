@@ -35,7 +35,7 @@ class FaceDetectionTcp : public rclcpp::Node {
 
         std::string server_addr = get_parameter("server_addr").as_string();
         int server_port = get_parameter("server_port").as_int();
-	show_gui = get_parameter("show_gui").as_bool();
+        show_gui = get_parameter("show_gui").as_bool();
 
         subscription = this->create_subscription<sensor_msgs::msg::Image>(
             "image", 10,
@@ -58,13 +58,11 @@ class FaceDetectionTcp : public rclcpp::Node {
         if (frame.empty()) {
             return;
         }
-        if(frame.cols != 640 || frame.rows != 360) {
+        if (frame.cols != 640 || frame.rows != 360) {
             cv::resize(frame, frame, cv::Size(640, 360));
         }
-        std::size_t frame_size =
-            frame.total() * frame.elemSize();
-        boost::asio::write(socket,
-                           boost::asio::buffer(frame.data, frame_size));
+        std::size_t frame_size = frame.total() * frame.elemSize();
+        boost::asio::write(socket, boost::asio::buffer(frame.data, frame_size));
     }
 
     boost::json::value recv_result() {
@@ -96,9 +94,9 @@ class FaceDetectionTcp : public rclcpp::Node {
         send_frame(frame);
         auto pub_msg = make_pub_msg(recv_result());
         result_publisher->publish(pub_msg);
-	if (show_gui) {
+        if (show_gui) {
             test_imshow(frame, pub_msg);
-	}
+        }
     }
 
     face_detection_msg::msg::Result make_pub_msg(boost::json::value result) {

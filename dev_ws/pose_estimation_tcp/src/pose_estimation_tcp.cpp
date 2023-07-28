@@ -58,13 +58,11 @@ class PoseEstimationTcp : public rclcpp::Node {
         if (frame.empty()) {
             return;
         }
-        if(frame.cols != 368 || frame.rows != 368) {
+        if (frame.cols != 368 || frame.rows != 368) {
             cv::resize(frame, frame, cv::Size(368, 368));
         }
-        std::size_t frame_size =
-            frame.total() * frame.elemSize();
-        boost::asio::write(socket,
-                           boost::asio::buffer(frame.data, frame_size));
+        std::size_t frame_size = frame.total() * frame.elemSize();
+        boost::asio::write(socket, boost::asio::buffer(frame.data, frame_size));
     }
 
     boost::json::value recv_result() {
@@ -80,26 +78,27 @@ class PoseEstimationTcp : public rclcpp::Node {
     }
 
     void test_imshow(cv::Mat &frame, pose_estimation_msg::msg::Result result) {
-	std::vector<std::vector<int>> limb_seq = {
-		{0, 1}, {1, 2}, {2, 3},  {3, 4},  {1, 5},   {5, 6},    {6, 7},
-		{1, 8}, {8, 9}, {9, 10}, {1, 11}, {11, 12}, { 12, 13 }
-	};
-	 for (size_t k = 1; k < result.poses.size(); ++k) {
-	     for (size_t i = 0; i < result.poses[k].pose.size(); ++i) {
-                 if (result.poses[k].pose[i].is_valid == 1) {
-                         cv::Point2f point(result.poses[k].pose[i].x, result.poses[k].pose[i].y);
-			 cv::circle(frame, point, 5,
-					 cv::Scalar(0, 255, 0), -1);
-		 }
-	     }
-	     for (size_t i = 0; i < limb_seq.size(); ++i) {
-		     auto p_0 = result.poses[k].pose[limb_seq[i][0]];
-		     auto p_1 = result.poses[k].pose[limb_seq[i][1]];
-		     if (p_0.is_valid==1 && p_1.is_valid==1) {
-                         cv::line(frame, cv::Point2f(p_0.x, p_0.y), cv::Point2f(p_1.x, p_1.y), cv::Scalar(255, 0, 0), 3, 4);
-		     }
-	     }
-	}
+        std::vector<std::vector<int>> limb_seq = {
+            {0, 1}, {1, 2}, {2, 3},  {3, 4},  {1, 5},   {5, 6},  {6, 7},
+            {1, 8}, {8, 9}, {9, 10}, {1, 11}, {11, 12}, {12, 13}};
+        for (size_t k = 1; k < result.poses.size(); ++k) {
+            for (size_t i = 0; i < result.poses[k].pose.size(); ++i) {
+                if (result.poses[k].pose[i].is_valid == 1) {
+                    cv::Point2f point(result.poses[k].pose[i].x,
+                                      result.poses[k].pose[i].y);
+                    cv::circle(frame, point, 5, cv::Scalar(0, 255, 0), -1);
+                }
+            }
+            for (size_t i = 0; i < limb_seq.size(); ++i) {
+                auto p_0 = result.poses[k].pose[limb_seq[i][0]];
+                auto p_1 = result.poses[k].pose[limb_seq[i][1]];
+                if (p_0.is_valid == 1 && p_1.is_valid == 1) {
+                    cv::line(frame, cv::Point2f(p_0.x, p_0.y),
+                             cv::Point2f(p_1.x, p_1.y), cv::Scalar(255, 0, 0),
+                             3, 4);
+                }
+            }
+        }
         cv::imshow("result", frame);
         cv::waitKey(1);
     }
@@ -109,8 +108,8 @@ class PoseEstimationTcp : public rclcpp::Node {
         send_frame(frame);
         auto pub_msg = make_pub_msg(recv_result());
         result_publisher->publish(pub_msg);
-	if (show_gui) {
-	    test_imshow(frame, pub_msg);
+        if (show_gui) {
+            test_imshow(frame, pub_msg);
         }
     }
 
