@@ -1,8 +1,7 @@
 # ROS2tcp
 [FPGA-Based-EdgeAI-Prototypes](https://github.com/DYGV/FPGA-Based-EdgeAI-Prototypes/)のTCPサーバとの通信をROS 2ノード内で行うパッケージ  
 
-https://github.com/DYGV/ros2tcp-edgeAI/assets/8480644/545b7924-9846-4fd9-8228-a07ef007d903
-
+![demo](./docs/demo.gif)  
 ![rqt](./docs/rosgraph.png)
 
 
