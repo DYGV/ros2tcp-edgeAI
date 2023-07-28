@@ -3,7 +3,7 @@
 
 ![demo](./docs/demo.gif)  
 <p align="center">
-ZynqMPで顔検出(左)、Alveo U50で姿勢推定(右)したとき
+ZynqMPで顔検出(左)、Alveo U50で姿勢推定(右)のTCPサーバを立ち上げてROS 2ノードから通信したとき
 </p>
 
 
