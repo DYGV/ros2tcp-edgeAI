@@ -2,11 +2,13 @@
 [FPGA-Based-EdgeAI-Prototypes](https://github.com/DYGV/FPGA-Based-EdgeAI-Prototypes/)のTCPサーバとの通信をROS 2ノード内で行うパッケージ  
 
 ![demo](./docs/demo.gif)  
-![rqt](./docs/rosgraph.png)
-
+<div style="text-align: center;">
+ZynqMPで顔検出(左)、Alveo U50で姿勢推定(右)したとき
+</div>
 
 
 ## ROS 2パッケージ起動手順
+![rqt](./docs/rosgraph.png)  
 ### image\_senderパッケージ
 `image`トピックに画像データをPublishするパッケージ  
 ```
