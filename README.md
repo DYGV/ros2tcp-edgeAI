@@ -7,7 +7,7 @@ ZynqMPで顔検出(左)、Alveo U50で姿勢推定(右)のTCPサーバを立ち�
 </p>
 
 
-## ROS 2パッケージ起動手順
+## ROS 2ノード起動手順
 ![rqt](./docs/rosgraph.png)  
 ### image\_senderパッケージ
 `image`トピックに画像データをPublishするノードの立ち上げ  
