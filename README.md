@@ -24,3 +24,6 @@ ros2 run face_detection_tcp face_detection_tcp --ros-args -p server_addr:=192.16
 ```
 ros2 run pose_estimation_tcp pose_estimation_tcp --ros-args -p server_addr:=192.168.0.163 -p server_port:=54321 -p show_gui:=true
 ```  
+
+## ライセンス
+このパッケージはApache License 2.0のもとで配布されています。詳細については、[LICENSEファイル](./LICENSE.md)を参照してください。  
