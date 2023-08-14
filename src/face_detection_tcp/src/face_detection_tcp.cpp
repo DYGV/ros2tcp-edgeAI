@@ -1,12 +1,12 @@
 /*
  * Copyright 2023 Eisuke Okazaki
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *  http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,7 +19,7 @@
 
 #include "cv_bridge/cv_bridge.h"
 #include "rclcpp/rclcpp.hpp"
-#include "sensor_msgs/msg/image.hpp"
+#include "sensor_msgs/msg/compressed_image.hpp"
 #include "std_msgs/msg/header.hpp"
 
 #include <image_transport/image_transport.hpp>
@@ -38,6 +38,8 @@
 #include "face_detection_msg/msg/face_detection_result.hpp"
 #include "face_detection_msg/msg/result.hpp"
 
+#define JPEG_QUALITY 80
+
 using boost::asio::ip::tcp;
 
 class FaceDetectionTcp : public rclcpp::Node {
@@ -53,9 +55,12 @@ class FaceDetectionTcp : public rclcpp::Node {
         int server_port = get_parameter("server_port").as_int();
         show_gui = get_parameter("show_gui").as_bool();
 
-        subscription = this->create_subscription<sensor_msgs::msg::Image>(
-            "image", 10,
-            [this](sensor_msgs::msg::Image::SharedPtr msg) { callback(msg); });
+        subscription =
+            this->create_subscription<sensor_msgs::msg::CompressedImage>(
+                "image", 10,
+                [this](sensor_msgs::msg::CompressedImage::SharedPtr msg) {
+                    callback(msg);
+                });
         result_publisher =
             this->create_publisher<face_detection_msg::msg::Result>(
                 "face_detection_result", 10);
@@ -70,15 +75,11 @@ class FaceDetectionTcp : public rclcpp::Node {
     ~FaceDetectionTcp() { socket.close(); }
 
   private:
-    void send_frame(cv::Mat &frame) {
-        if (frame.empty()) {
-            return;
-        }
-        if (frame.cols != 640 || frame.rows != 360) {
-            cv::resize(frame, frame, cv::Size(640, 360));
-        }
-        std::size_t frame_size = frame.total() * frame.elemSize();
-        boost::asio::write(socket, boost::asio::buffer(frame.data, frame_size));
+    void send_frame(std::vector<uchar> &frame) {
+        std::size_t frame_size = frame.size();
+        boost::asio::write(
+            socket, boost::asio::buffer(&frame_size, sizeof(std::size_t)));
+        boost::asio::write(socket, boost::asio::buffer(frame, frame_size));
     }
 
     boost::json::value recv_result() {
@@ -105,12 +106,15 @@ class FaceDetectionTcp : public rclcpp::Node {
         cv::waitKey(1);
     }
 
-    void callback(const sensor_msgs::msg::Image::SharedPtr msg) {
-        cv::Mat frame = cv_bridge::toCvCopy(msg, msg->encoding)->image;
-        send_frame(frame);
+    void callback(const sensor_msgs::msg::CompressedImage::SharedPtr msg) {
+        send_frame(msg->data);
         auto pub_msg = make_pub_msg(recv_result());
         result_publisher->publish(pub_msg);
         if (show_gui) {
+            cv::Mat frame = cv::imdecode(cv::Mat(msg->data), cv::IMREAD_COLOR);
+            if (frame.rows != 360 && frame.cols != 640) {
+                cv::resize(frame, frame, cv::Size(640, 360));
+            }
             test_imshow(frame, pub_msg);
         }
     }
@@ -138,7 +142,8 @@ class FaceDetectionTcp : public rclcpp::Node {
         return msg;
     }
 
-    rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr subscription;
+    rclcpp::Subscription<sensor_msgs::msg::CompressedImage>::SharedPtr
+        subscription;
     rclcpp::Publisher<face_detection_msg::msg::Result>::SharedPtr
         result_publisher;
     tcp::socket socket;
